@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; max-width: 800px; margin: 0 auto; }
+        .test-section { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        button { margin: 5px; padding: 10px; cursor: pointer; }
+        pre { background: #f4f4f4; padding: 10px; overflow-x: auto; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Stockify API Tests</h1>
+    
+    <div class="test-section">
+        <h2>1. User Registration Tests</h2>
+        <button onclick="testRegister('test@example.com', '123456', 'Test User', 'cashier')">Register New User</button>
+        <button onclick="testRegister('admin@example.com', '123456', 'Duplicate User', 'admin')">Test Duplicate Email</button>
+    </div>
+
+    <div class="test-section">
+        <h2>2. User Login Tests</h2>
+        <button onclick="testLogin('admin@example.com', '123456')">Login as Admin</button>
+        <button onclick="testLogin('cashier@example.com', '123456')">Login as Cashier</button>
+        <button onclick="testLogin('admin@example.com', 'wrongpass')">Test Wrong Password</button>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Protected Routes Tests</h2>
+        <button onclick="testAdminRoute()">Test Admin-Only Route</button>
+        <button onclick="getProfile()">Get User Profile</button>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Profile Update Tests</h2>
+        <button onclick="updateProfile({ name: 'Updated Name' })">Update Name</button>
+        <button onclick="updateProfile({ password: 'newpassword123' })">Update Password</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Results:</h2>
+        <pre id="result"></pre>
+    </div>
+
+    <script>
+        let currentToken = '';
+
+        function showResult(data, error = false) {
+            const resultElement = document.getElementById('result');
+            resultElement.className = error ? 'error' : 'success';
+            resultElement.textContent = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
+        }
+
+        async function testRegister(email, password, name, role) {
+            try {
+                const response = await fetch('http://localhost:5000/api/users/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password, name, role })
+                });
+                const data = await response.json();
+                showResult(data, !response.ok);
+            } catch (error) {
+                showResult(error.message, true);
+            }
+        }
+
+        async function testLogin(email, password) {
+            try {
+                const response = await fetch('http://localhost:5000/api/users/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    currentToken = data.token;
+                }
+                showResult(data, !response.ok);
+            } catch (error) {
+                showResult(error.message, true);
+            }
+        }
+
+        async function testAdminRoute() {
+            try {
+                if (!currentToken) {
+                    throw new Error('Please login first!');
+                }
+
+                const response = await fetch('http://localhost:5000/api/users/admin-only', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                const data = await response.json();
+                showResult(data, !response.ok);
+            } catch (error) {
+                showResult(error.message, true);
+            }
+        }
+
+        async function getProfile() {
+            try {
+                if (!currentToken) {
+                    throw new Error('Please login first!');
+                }
+
+                const response = await fetch('http://localhost:5000/api/users/profile', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                const data = await response.json();
+                showResult(data, !response.ok);
+            } catch (error) {
+                showResult(error.message, true);
+            }
+        }
+
+        async function updateProfile(updates) {
+            try {
+                if (!currentToken) {
+                    throw new Error('Please login first!');
+                }
+
+                const response = await fetch('http://localhost:5000/api/users/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify(updates)
+                });
+                const data = await response.json();
+                showResult(data, !response.ok);
+            } catch (error) {
+                showResult(error.message, true);
+            }
+        }
+    </script>
+</body>
+</html>
