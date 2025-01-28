@@ -1,24 +1,26 @@
-# Dependencies
+# dependencies
 node_modules/
+/.pnp
+.pnp.js
 
-# Environment variables
-.env
+# testing
+/coverage
 
-# Logs
-logs
-*.log
+# production
+/build
+/dist
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
 npm-debug.log*
-
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
+yarn-debug.log*
+yarn-error.log*
 
 # IDE
-.vscode/
 .idea/
-
-# OS
-.DS_Store
-Thumbs.db
+.vscode/
